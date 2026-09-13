@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>¿Salimos? 🐶</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blush:#FFEEF2;
+    --card:#FFFFFF;
+    --rose:#D6336C;
+    --rose-deep:#B0234F;
+    --ink:#3A2E30;
+    --muted:#A9707F;
+    --lilac:#7C5CBF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100svh;
+    background:
+      radial-gradient(circle at 15% 20%, #FFDCE5 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, #FFE1E9 0%, transparent 45%),
+      var(--blush);
+    font-family:'Nunito Sans', sans-serif;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .heart{
+    position:fixed;
+    font-size:20px;
+    opacity:0.35;
+    animation:float 7s ease-in-out infinite;
+    pointer-events:none;
+    z-index:0;
+  }
+  @keyframes float{
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-18px) rotate(8deg);}
+  }
+  .card{
+    position:relative;
+    z-index:1;
+    background:var(--card);
+    border-radius:28px;
+    padding:40px 30px;
+    max-width:380px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(176,35,79,0.15);
+    min-height:340px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .step{display:none;width:100%;animation:appear .35s ease;}
+  .step.active{display:flex;flex-direction:column;align-items:center;}
+  @keyframes appear{
+    from{opacity:0;transform:translateY(8px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .avatar{
+    width:84px;height:84px;
+    border-radius:50%;
+    background:linear-gradient(160deg,#FFE1E9,#FFC9D9);
+    display:flex;align-items:center;justify-content:center;
+    font-size:40px;
+    margin-bottom:18px;
+    box-shadow:inset 0 0 0 3px #fff, 0 6px 16px rgba(214,51,108,0.2);
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.5rem;
+    line-height:1.3;
+    margin:0 0 6px;
+    color:var(--rose-deep);
+  }
+  p.sub{
+    font-size:0.95rem;
+    color:var(--muted);
+    margin:0 0 26px;
+    line-height:1.5;
+  }
+  .btn-row{
+    position:relative;
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    width:100%;
+    min-height:56px;
+  }
+  button{
+    font-family:'Nunito Sans', sans-serif;
+    font-weight:700;
+    font-size:1rem;
+    border:none;
+    border-radius:999px;
+    padding:14px 26px;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  button:active{transform:scale(0.97);}
+  .btn-yes{
+    background:var(--rose);
+    color:#fff;
+    box-shadow:0 8px 20px rgba(214,51,108,0.35);
+  }
+  .btn-yes:hover{box-shadow:0 10px 24px rgba(214,51,108,0.45);}
+  .btn-no{
+    background:#F3E8ED;
+    color:var(--muted);
+    position:relative;
+  }
+  .btn-no.dodging{
+    position:fixed;
+    z-index:50;
+    transition: left .16s ease-out, top .16s ease-out;
+  }
+  .btn-primary{
+    background:var(--rose);
+    color:#fff;
+    width:100%;
+    box-shadow:0 8px 20px rgba(214,51,108,0.35);
+    margin-top:8px;
+  }
+  .btn-primary:disabled{
+    background:#F0D6DE;
+    color:#C99CAE;
+    box-shadow:none;
+    cursor:not-allowed;
+  }
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:22px;
+  }
+  .chip{
+    background:#FBF0F3;
+    color:var(--ink);
+    border:2px solid transparent;
+    border-radius:16px;
+    padding:12px 16px;
+    font-size:0.92rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .chip.selected{
+    border-color:var(--rose);
+    background:#FFE4EC;
+    color:var(--rose-deep);
+  }
+  .other-input{
+    display:none;
+    width:100%;
+    margin-bottom:18px;
+  }
+  .other-input.show{display:block;}
+  .sub-label{
+    display:none;
+    align-self:flex-start;
+    font-size:0.85rem;
+    font-weight:700;
+    color:var(--muted);
+    margin:-8px 0 10px;
+  }
+  .sub-label.show{display:block;}
+  .sub-chips{
+    display:none;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:20px;
+  }
+  .sub-chips.show{display:flex;}
+  .chip.sub{
+    padding:10px 14px;
+    font-size:0.86rem;
+    background:#FFFFFF;
+    border:2px solid #F3E0E6;
+  }
+  .chip.sub.selected{
+    border-color:var(--rose);
+    background:#FFE4EC;
+    color:var(--rose-deep);
+  }
+  input[type=text], input[type=date], input[type=time]{
+    width:100%;
+    font-family:'Nunito Sans', sans-serif;
+    font-size:0.95rem;
+    padding:13px 14px;
+    border-radius:14px;
+    border:2px solid #F3E0E6;
+    background:#FFFBFC;
+    color:var(--ink);
+    margin-bottom:14px;
+  }
+  input:focus{outline:2px solid var(--rose); outline-offset:1px;}
+  label.field-label{
+    align-self:flex-start;
+    font-size:0.85rem;
+    font-weight:700;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .field{width:100%; text-align:left;}
+  .summary{
+    background:#FBF0F3;
+    border-radius:16px;
+    padding:16px 18px;
+    width:100%;
+    text-align:left;
+    font-size:0.92rem;
+    line-height:1.7;
+    margin-bottom:20px;
+  }
+  .summary b{color:var(--rose-deep);}
+  .footnote{
+    font-size:0.78rem;
+    color:var(--muted);
+    margin-top:18px;
+    font-style:italic;
+  }
+  .final-emoji{font-size:48px; margin-bottom:10px;}
+
+  /* ---------- Paso 0: mensaje de chat inicial ---------- */
+  #step0{align-items:stretch;}
+  .chat-wrap{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    min-height:150px;
+    justify-content:flex-end;
+    margin-bottom:22px;
+  }
+  .bubble{
+    align-self:flex-start;
+    background:#F3E8ED;
+    color:var(--ink);
+    padding:12px 16px;
+    border-radius:18px 18px 18px 4px;
+    font-size:0.96rem;
+    line-height:1.45;
+    max-width:88%;
+    text-align:left;
+    display:none;
+  }
+  .typing-dots{
+    align-self:flex-start;
+    background:#F3E8ED;
+    border-radius:18px 18px 18px 4px;
+    padding:14px 18px;
+    display:none;
+    gap:4px;
+  }
+  .typing-dots.show{display:flex;}
+  .typing-dots span{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--muted);
+    animation:bounce 1.1s infinite ease-in-out;
+  }
+  .typing-dots span:nth-child(2){animation-delay:.15s;}
+  .typing-dots span:nth-child(3){animation-delay:.3s;}
+  @keyframes bounce{
+    0%,60%,100%{transform:translateY(0); opacity:.5;}
+    30%{transform:translateY(-5px); opacity:1;}
+  }
+  .cursor-blink::after{
+    content:'|';
+    animation:blink 0.9s step-start infinite;
+    color:var(--rose);
+  }
+  @keyframes blink{50%{opacity:0;}}
+  #introBtn{
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .4s ease;
+  }
+  #introBtn.show{opacity:1; pointer-events:auto;}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- PASO 0: mensaje de chat inicial (personalizable) -->
+  <div class="step active" id="step0">
+    <div class="chat-wrap" id="chatWrap">
+      <div class="typing-dots" id="dots1"><span></span><span></span><span></span></div>
+      <div class="bubble" id="bubble1"></div>
+      <div class="typing-dots" id="dots2"><span></span><span></span><span></span></div>
+      <div class="bubble" id="bubble2"></div>
+    </div>
+    <button class="btn-primary" id="introBtn" onclick="goTo('step1')">Vale, dispara 👀</button>
+  </div>
+
+  <!-- PASO 1: la pregunta -->
+  <div class="step" id="step1">
+    <div class="avatar">🐶</div>
+    <h1>¿Quieres salir conmigo?</h1>
+    <p class="sub">Piénsalo bien... aunque solo hay una respuesta correcta 👀</p>
+    <div class="btn-row" id="btnRow">
+      <button class="btn-yes" onclick="goTo('step2')">Sí ♥</button>
+      <button class="btn-no" id="noBtn">no</button>
+    </div>
+  </div>
+
+  <!-- PASO 2: categoría de plan -->
+  <div class="step" id="step2">
+    <h1>¿Qué te apetece hacer?</h1>
+    <p class="sub">Elige un plan (o dime el tuyo)</p>
+    <div class="chips" id="chips">
+      <div class="chip" data-value="Cenar 🍽️">Cenar 🍽️</div>
+      <div class="chip" data-value="Cine 🎬">Cine 🎬</div>
+      <div class="chip" data-value="Paseo 🚶">Paseo 🚶</div>
+      <div class="chip" data-value="Playa 🏖️">Playa 🏖️</div>
+      <div class="chip" data-value="Fiesta 🎉">Fiesta 🎉</div>
+      <div class="chip" data-value="otro">Otro plan ✨</div>
+    </div>
+    <div class="other-input" id="otherWrap">
+      <input type="text" id="otherPlan" placeholder="Cuéntame tu idea...">
+    </div>
+    <p class="sub-label" id="subLabel">¿De qué tipo?</p>
+    <div class="sub-chips" id="subChips"></div>
+    <button class="btn-primary" id="planNext" disabled onclick="goTo('step3')">Continuar</button>
+  </div>
+
+  <!-- PASO 3: fecha y hora -->
+  <div class="step" id="step3">
+    <h1>¿Cuándo te viene bien?</h1>
+    <p class="sub">Elige día y hora</p>
+    <div class="field">
+      <label class="field-label">Día</label>
+      <input type="date" id="dateInput">
+    </div>
+    <div class="field">
+      <label class="field-label">Hora</label>
+      <input type="time" id="timeInput" value="18:00">
+    </div>
+    <button class="btn-primary" onclick="goTo('step4')">Ver resumen</button>
+  </div>
+
+  <!-- PASO 4: confirmación y envío -->
+  <div class="step" id="step4">
+    <h1>Entonces queda así</h1>
+    <div class="summary" id="summaryBox"></div>
+    <button class="btn-primary" id="sendBtn" onclick="sendAnswer()">Sí, confirmo ♥</button>
+    <p class="footnote">Al confirmar, se me avisará automáticamente 💌</p>
+  </div>
+
+  <!-- PASO 5: final -->
+  <div class="step" id="step5">
+    <div class="final-emoji">🎉🐶💌</div>
+    <h1>¡Guardado en el calendario!</h1>
+    <p class="sub">Nos vemos pronto ♥</p>
+  </div>
+
+</div>
+
+<script>
+  /* ---------- Mensaje inicial (edita esto a tu gusto) ---------- */
+  const MY_NAME = "Jonatan";
+  const BUBBLE_1 = `Hola, soy ${MY_NAME} 👋`;
+  const BUBBLE_2 = `Quería pedirte salir... pero se me ocurrió hacerlo de una forma un poco diferente 😏`;
+
+  const sleep = ms => new Promise(r=>setTimeout(r, ms));
+
+  function typeText(el, text, speed=28){
+    return new Promise(resolve=>{
+      el.style.display = 'block';
+      el.classList.add('cursor-blink');
+      let i = 0;
+      const timer = setInterval(()=>{
+        el.textContent = text.slice(0, i+1);
+        i++;
+        if(i >= text.length){
+          clearInterval(timer);
+          el.classList.remove('cursor-blink');
+          resolve();
+        }
+      }, speed);
+    });
+  }
+
+  async function runIntro(){
+    const dots1 = document.getElementById('dots1');
+    const dots2 = document.getElementById('dots2');
+    const bubble1 = document.getElementById('bubble1');
+    const bubble2 = document.getElementById('bubble2');
+    const introBtn = document.getElementById('introBtn');
+
+    await sleep(500);
+    dots1.classList.add('show');
+    await sleep(1100);
+    dots1.classList.remove('show');
+    await typeText(bubble1, BUBBLE_1);
+
+    await sleep(500);
+    dots2.classList.add('show');
+    await sleep(1300);
+    dots2.classList.remove('show');
+    await typeText(bubble2, BUBBLE_2);
+
+    await sleep(400);
+    introBtn.classList.add('show');
+  }
+  runIntro();
+
+  /* ---------- Corazones flotando de fondo ---------- */
+  const positions = [[6,12],[90,18],[12,85],[85,78],[50,6],[46,92]];
+  positions.forEach(([left, top], i)=>{
+    const h = document.createElement('div');
+    h.className='heart';
+    h.textContent='♥';
+    h.style.left = left+'vw';
+    h.style.top = top+'vh';
+    h.style.animationDelay = (i*0.6)+'s';
+    document.body.appendChild(h);
+  });
+
+  /* ---------- Navegación entre pasos ---------- */
+  function goTo(id){
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  /* ---------- Botón "no" esquivo (huye al acercarse: ratón o dedo) ---------- */
+  const noBtn = document.getElementById('noBtn');
+  const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  const DODGE_RADIUS = isCoarsePointer ? 130 : 95; // en móvil el dedo es menos preciso
+  const JUMP_DIST = isCoarsePointer ? 140 : 110;
+  const MARGIN = 20;
+  let btnX, btnY, btnW, btnH, isFixed = false, lastJump = 0;
+
+  function activateFixed(){
+    const r = noBtn.getBoundingClientRect();
+    btnW = r.width; btnH = r.height;
+    btnX = r.left; btnY = r.top;
+
+    // reservar el hueco original para que el botón "Sí" no se desplace
+    const spacer = document.createElement('span');
+    spacer.style.display = 'inline-block';
+    spacer.style.width = btnW+'px';
+    spacer.style.height = btnH+'px';
+    spacer.style.visibility = 'hidden';
+    noBtn.parentNode.insertBefore(spacer, noBtn);
+
+    noBtn.style.width = btnW+'px';
+    noBtn.style.left = btnX+'px';
+    noBtn.style.top = btnY+'px';
+    noBtn.classList.add('dodging');
+    isFixed = true;
+  }
+
+  function clamp(val, min, max){ return Math.max(min, Math.min(max, val)); }
+
+  function jumpAwayFrom(px, py){
+    const now = Date.now();
+    if(now - lastJump < 150) return; // evita saltos demasiado seguidos
+    lastJump = now;
+
+    const cx = btnX + btnW/2, cy = btnY + btnH/2;
+    let dx = cx - px, dy = cy - py;
+    const len = Math.hypot(dx, dy) || 1;
+    dx /= len; dy /= len;
+    // un poco de aleatoriedad para que no huya siempre en línea recta
+    const wobble = (Math.random()-0.5) * 0.8;
+    dx += wobble; dy += (Math.random()-0.5)*0.8;
+    const wlen = Math.hypot(dx,dy) || 1;
+    dx/=wlen; dy/=wlen;
+
+    btnX = clamp(btnX + dx*JUMP_DIST, MARGIN, window.innerWidth - btnW - MARGIN);
+    btnY = clamp(btnY + dy*JUMP_DIST, MARGIN, window.innerHeight - btnH - MARGIN);
+    noBtn.style.left = btnX+'px';
+    noBtn.style.top = btnY+'px';
+    if(navigator.vibrate) navigator.vibrate(12);
+  }
+
+  function handlePointer(e){
+    if(!document.getElementById('step1').classList.contains('active')) return;
+    if(!isFixed) activateFixed();
+    const px = e.clientX, py = e.clientY;
+    const cx = btnX + btnW/2, cy = btnY + btnH/2;
+    const dist = Math.hypot(px-cx, py-cy);
+    if(dist < DODGE_RADIUS){
+      jumpAwayFrom(px, py);
+    }
+  }
+
+  // ratón: se detecta la cercanía mientras se mueve por la pantalla
+  document.addEventListener('pointermove', handlePointer, {passive:true});
+  // dedo: no hay "mover sin tocar", así que se comprueba en cada toque
+  // (si el dedo toca cerca o justo encima, el botón ya ha saltado antes de soltar)
+  document.addEventListener('pointerdown', (e)=>{
+    if(e.target === noBtn) e.preventDefault();
+    handlePointer(e);
+  }, {passive:false});
+
+  /* ---------- Selección de categoría (con sub-opciones) ---------- */
+  const SUB_OPTIONS = {
+    "Cenar 🍽️": ["Italiana 🍝","Sushi 🍣","Mexicana 🌮","Hamburguesas 🍔","Sorpréndeme 🎲"],
+    "Cine 🎬": ["Comedia 😂","Terror 👻","Acción 💥","Romántica 💕","Animación 🎨"]
+  };
+
+  let mainPlan = null;
+  let subPlan = null;
+  let selectedPlan = null;
+
+  const chips = document.querySelectorAll('.chip');
+  const otherWrap = document.getElementById('otherWrap');
+  const otherInput = document.getElementById('otherPlan');
+  const planNext = document.getElementById('planNext');
+  const subLabel = document.getElementById('subLabel');
+  const subChipsBox = document.getElementById('subChips');
+
+  function updateSelectedPlan(){
+    if(mainPlan === 'otro'){
+      selectedPlan = otherInput.value.trim();
+    } else if(SUB_OPTIONS[mainPlan]){
+      selectedPlan = subPlan ? `${mainPlan} · ${subPlan}` : null;
+    } else {
+      selectedPlan = mainPlan;
+    }
+    planNext.disabled = !selectedPlan;
+  }
+
+  function renderSubOptions(){
+    subChipsBox.innerHTML = '';
+    subPlan = null;
+    if(mainPlan && SUB_OPTIONS[mainPlan]){
+      SUB_OPTIONS[mainPlan].forEach(opt=>{
+        const el = document.createElement('div');
+        el.className = 'chip sub';
+        el.textContent = opt;
+        el.addEventListener('click', ()=>{
+          subChipsBox.querySelectorAll('.chip.sub').forEach(c=>c.classList.remove('selected'));
+          el.classList.add('selected');
+          subPlan = opt;
+          updateSelectedPlan();
+        });
+        subChipsBox.appendChild(el);
+      });
+      subLabel.classList.add('show');
+      subChipsBox.classList.add('show');
+    } else {
+      subLabel.classList.remove('show');
+      subChipsBox.classList.remove('show');
+    }
+  }
+
+  chips.forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      chips.forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      mainPlan = chip.dataset.value;
+
+      if(mainPlan === 'otro'){
+        otherWrap.classList.add('show');
+      } else {
+        otherWrap.classList.remove('show');
+      }
+      renderSubOptions();
+      updateSelectedPlan();
+    });
+  });
+  otherInput.addEventListener('input', updateSelectedPlan);
+
+  /* ---------- Resumen ---------- */
+  document.getElementById('step3').addEventListener('transitionend', ()=>{});
+  const dateInput = document.getElementById('dateInput');
+  const timeInput = document.getElementById('timeInput');
+
+  function buildSummary(){
+    const fecha = dateInput.value ? new Date(dateInput.value+'T00:00:00').toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'}) : 'sin fecha';
+    const hora = timeInput.value || 'sin hora';
+    document.getElementById('summaryBox').innerHTML =
+      `<b>Plan:</b> ${selectedPlan}<br><b>Día:</b> ${fecha}<br><b>Hora:</b> ${hora}`;
+    return {plan:selectedPlan, fecha, hora};
+  }
+  document.querySelector('button[onclick="goTo(\'step4\')"]').addEventListener('click', buildSummary);
+
+  /* ---------- Envío de la respuesta ---------- */
+  // 1) Opción recomendada: crea un formulario gratis en https://formspree.io
+  //    y pega aquí tu endpoint (algo como "https://formspree.io/f/xxxxxxx").
+  //    Así recibirás un email automático con la respuesta, sin tocar nada más.
+  const FORMSPREE_ENDPOINT = ""; // <-- pega aquí tu endpoint de Formspree
+
+  async function sendAnswer(){
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Enviando...';
+
+    const data = {
+      respuesta: "Sí",
+      plan: selectedPlan,
+      fecha: dateInput.value,
+      hora: timeInput.value
+    };
+
+    if(FORMSPREE_ENDPOINT){
+      try{
+        await fetch(FORMSPREE_ENDPOINT, {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Accept':'application/json'},
+          body: JSON.stringify(data)
+        });
+      }catch(err){ /* si falla la red, igualmente mostramos el final */ }
+      goTo('step5');
+    } else {
+      // 2) Alternativa sin configurar nada: abre el correo con la respuesta ya escrita.
+      const body = `Plan: ${data.plan}%0AFecha: ${data.fecha}%0AHora: ${data.hora}`;
+      window.location.href = `mailto:?subject=¡Dijo que sí!&body=${body}`;
+      goTo('step5');
+    }
+  }
+</script>
+</body>
+</html>
