@@ -41,9 +41,18 @@
     pointer-events:none;
     z-index:0;
   }
-  @keyframes float{
-    0%,100%{transform:translateY(0) rotate(0deg);}
-    50%{transform:translateY(-18px) rotate(8deg);}
+  @keyframes floatA{
+    0%{transform:translate(0,0) rotate(0deg);}
+    25%{transform:translate(6px,-22px) rotate(10deg);}
+    50%{transform:translate(-4px,-38px) rotate(-6deg);}
+    75%{transform:translate(-10px,-18px) rotate(4deg);}
+    100%{transform:translate(0,0) rotate(0deg);}
+  }
+  @keyframes floatB{
+    0%{transform:translate(0,0) rotate(0deg);}
+    30%{transform:translate(-10px,-16px) rotate(-8deg);}
+    60%{transform:translate(8px,-32px) rotate(10deg);}
+    100%{transform:translate(0,0) rotate(0deg);}
   }
   .card{
     position:relative;
@@ -119,11 +128,24 @@
     background:#F3E8ED;
     color:var(--muted);
     position:relative;
+    animation: nervous 2.6s ease-in-out infinite;
+  }
+  @keyframes nervous{
+    0%, 100%{ transform: scale(1) rotate(0deg); }
+    50%{ transform: scale(1.05) rotate(-2deg); }
   }
   .btn-no.dodging{
     position:fixed;
     z-index:50;
     transition: left .16s ease-out, top .16s ease-out;
+  }
+  .btn-no.flinch{
+    animation: flinch .28s ease-out;
+  }
+  @keyframes flinch{
+    0%{ transform: scale(0.85) rotate(-8deg); }
+    60%{ transform: scale(1.12) rotate(6deg); }
+    100%{ transform: scale(1) rotate(0deg); }
   }
   .btn-primary{
     background:var(--rose);
@@ -325,7 +347,7 @@
     <h1>¿Quieres salir conmigo?</h1>
     <p class="sub">Piénsalo bien... aunque solo hay una respuesta correcta 👀</p>
     <div class="btn-row" id="btnRow">
-      <button class="btn-yes" onclick="goTo('step2')">Sí ♥</button>
+      <button class="btn-yes" onclick="celebrate(); goTo('step2')">Sí ♥</button>
       <button class="btn-no" id="noBtn">no</button>
     </div>
   </div>
@@ -340,6 +362,7 @@
       <div class="chip" data-value="Paseo 🚶">Paseo 🚶</div>
       <div class="chip" data-value="Playa 🏖️">Playa 🏖️</div>
       <div class="chip" data-value="Fiesta 🎉">Fiesta 🎉</div>
+      <div class="chip" data-value="Noche de peli y juegos 🎮🍿">Noche de peli y juegos 🎮🍿</div>
       <div class="chip" data-value="otro">Otro plan ✨</div>
     </div>
     <div class="other-input" id="otherWrap">
@@ -360,7 +383,7 @@
     </div>
     <div class="field">
       <label class="field-label">Hora</label>
-      <input type="time" id="timeInput" value="18:00">
+      <input type="time" id="timeInput">
     </div>
     <button class="btn-primary" onclick="goTo('step4')">Ver resumen</button>
   </div>
@@ -432,14 +455,24 @@
   runIntro();
 
   /* ---------- Corazones flotando de fondo ---------- */
-  const positions = [[6,12],[90,18],[12,85],[85,78],[50,6],[46,92]];
+  const positions = [
+    [6,12],[90,18],[12,85],[85,78],[50,6],[46,92],
+    [22,35],[74,42],[4,55],[95,55],[35,8],[64,90],[15,68],[80,10]
+  ];
   positions.forEach(([left, top], i)=>{
     const h = document.createElement('div');
     h.className='heart';
     h.textContent='♥';
     h.style.left = left+'vw';
     h.style.top = top+'vh';
-    h.style.animationDelay = (i*0.6)+'s';
+    const size = 14 + Math.random()*16;          // 14px a 30px
+    const duration = 4 + Math.random()*4;         // 4s a 8s
+    const delay = Math.random()*4;
+    const anim = Math.random() > 0.5 ? 'floatA' : 'floatB';
+    const opacity = 0.25 + Math.random()*0.35;
+    h.style.fontSize = size+'px';
+    h.style.opacity = opacity;
+    h.style.animation = `${anim} ${duration}s ease-in-out ${delay}s infinite`;
     document.body.appendChild(h);
   });
 
@@ -449,13 +482,121 @@
     document.getElementById(id).classList.add('active');
   }
 
+  /* ---------- Confeti + fuegos artificiales al decir que sí ---------- */
+  function celebrate(){
+    const dpr = window.devicePixelRatio || 1;
+    const W = window.innerWidth, H = window.innerHeight;
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = W+'px';
+    canvas.style.height = H+'px';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '999';
+    canvas.width = W*dpr;
+    canvas.height = H*dpr;
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const COLORS = ['#D6336C','#FF6B9E','#FFD166','#7C5CBF','#FFFFFF','#FF9EC4'];
+
+    // --- confeti cayendo desde arriba ---
+    const confetti = [];
+    for(let i=0;i<90;i++){
+      confetti.push({
+        x: Math.random()*W,
+        y: -20 - Math.random()*H*0.9,
+        vx: (Math.random()-0.5)*1.3,
+        vy: 1 + Math.random()*1.6,
+        size: 6 + Math.random()*7,
+        rot: Math.random()*360,
+        vr: (Math.random()-0.5)*7,
+        color: COLORS[Math.floor(Math.random()*COLORS.length)],
+        shape: Math.random() > 0.5 ? 'rect' : 'circle'
+      });
+    }
+
+    // --- fuegos artificiales: varias explosiones escalonadas ---
+    const fireworks = [];
+    const bursts = 10;
+    for(let b=0; b<bursts; b++){
+      const cx = W*0.2 + Math.random()*W*0.6;
+      const cy = H*0.15 + Math.random()*H*0.3;
+      const n = 38;
+      const particles = [];
+      for(let i=0;i<n;i++){
+        const angle = (i/n)*Math.PI*2;
+        const speed = 1.3 + Math.random()*1.7;
+        particles.push({
+          x: cx, y: cy,
+          vx: Math.cos(angle)*speed,
+          vy: Math.sin(angle)*speed,
+          color: COLORS[Math.floor(Math.random()*COLORS.length)],
+          life: 1
+        });
+      }
+      fireworks.push({ startTime: b*500 + Math.random()*180, particles });
+    }
+
+    const start = performance.now();
+    const duration = 7200;
+
+    function frame(now){
+      const elapsed = now - start;
+      ctx.clearRect(0, 0, W, H);
+
+      confetti.forEach(p=>{
+        p.x += p.vx; p.y += p.vy; p.vy += 0.012; p.rot += p.vr;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot * Math.PI/180);
+        ctx.fillStyle = p.color;
+        if(p.shape === 'rect'){
+          ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+        } else {
+          ctx.beginPath(); ctx.arc(0,0,p.size/2,0,Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
+      });
+
+      fireworks.forEach(fw=>{
+        if(elapsed >= fw.startTime){
+          fw.particles.forEach(p=>{
+            p.x += p.vx; p.y += p.vy; p.vy += 0.022; p.life -= 0.009;
+            if(p.life > 0){
+              ctx.globalAlpha = Math.max(p.life, 0);
+              ctx.fillStyle = p.color;
+              ctx.beginPath(); ctx.arc(p.x, p.y, 2.6, 0, Math.PI*2); ctx.fill();
+              ctx.globalAlpha = 1;
+            }
+          });
+        }
+      });
+
+      if(elapsed < duration){
+        requestAnimationFrame(frame);
+      } else {
+        canvas.remove();
+      }
+    }
+    requestAnimationFrame(frame);
+    if(navigator.vibrate) navigator.vibrate([25,40,25]);
+  }
+
   /* ---------- Botón "no" esquivo (huye al acercarse: ratón o dedo) ---------- */
   const noBtn = document.getElementById('noBtn');
   const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
-  const DODGE_RADIUS = isCoarsePointer ? 130 : 95; // en móvil el dedo es menos preciso
-  const JUMP_DIST = isCoarsePointer ? 140 : 110;
+  // en móvil no hay "hover", así que reacciona a cualquier toque en pantalla,
+  // no solo a los cercanos: así se nota que esquiva desde el primer toque.
+  const DODGE_RADIUS = isCoarsePointer ? 5000 : 95;
+  const JUMP_DIST = isCoarsePointer ? 130 : 110;
   const MARGIN = 20;
   let btnX, btnY, btnW, btnH, isFixed = false, lastJump = 0;
+
+  const NO_TEXTS = ['no','¡ni de coña!','casi...','inténtalo otra vez','no vas a poder','jaja no','sigue soñando','ni hablar'];
+  let noTextIndex = 0;
 
   function activateFixed(){
     const r = noBtn.getBoundingClientRect();
@@ -481,8 +622,14 @@
 
   function jumpAwayFrom(px, py){
     const now = Date.now();
-    if(now - lastJump < 150) return; // evita saltos demasiado seguidos
+    if(now - lastJump < 260) return; // evita saltos demasiado seguidos
     lastJump = now;
+
+    // asegurar que el botón mida lo que mide su texto actual antes de moverlo
+    noBtn.style.width = 'auto';
+    const w = noBtn.getBoundingClientRect().width;
+    noBtn.style.width = w+'px';
+    btnW = w;
 
     const cx = btnX + btnW/2, cy = btnY + btnH/2;
     let dx = cx - px, dy = cy - py;
@@ -498,6 +645,15 @@
     btnY = clamp(btnY + dy*JUMP_DIST, MARGIN, window.innerHeight - btnH - MARGIN);
     noBtn.style.left = btnX+'px';
     noBtn.style.top = btnY+'px';
+
+    // cambia el texto cada vez, para reforzar que "está vivo" y esquivando
+    noTextIndex = (noTextIndex+1) % NO_TEXTS.length;
+    noBtn.textContent = NO_TEXTS[noTextIndex];
+
+    // pequeño "flinch" visual
+    noBtn.classList.remove('flinch'); void noBtn.offsetWidth; noBtn.classList.add('flinch');
+    setTimeout(()=>noBtn.classList.remove('flinch'), 300);
+
     if(navigator.vibrate) navigator.vibrate(12);
   }
 
@@ -514,8 +670,8 @@
 
   // ratón: se detecta la cercanía mientras se mueve por la pantalla
   document.addEventListener('pointermove', handlePointer, {passive:true});
-  // dedo: no hay "mover sin tocar", así que se comprueba en cada toque
-  // (si el dedo toca cerca o justo encima, el botón ya ha saltado antes de soltar)
+  // dedo: cualquier toque en la pantalla (cerca o lejos) lo hace huir;
+  // si el toque es justo sobre el botón, ya se habrá movido antes de soltar.
   document.addEventListener('pointerdown', (e)=>{
     if(e.target === noBtn) e.preventDefault();
     handlePointer(e);
@@ -594,6 +750,14 @@
   document.getElementById('step3').addEventListener('transitionend', ()=>{});
   const dateInput = document.getElementById('dateInput');
   const timeInput = document.getElementById('timeInput');
+
+  // rellenar por defecto con la fecha y hora actuales
+  (function setDefaultDateTime(){
+    const now = new Date();
+    const pad = n => n.toString().padStart(2,'0');
+    dateInput.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    timeInput.value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  })();
 
   function buildSummary(){
     const fecha = dateInput.value ? new Date(dateInput.value+'T00:00:00').toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'}) : 'sin fecha';
